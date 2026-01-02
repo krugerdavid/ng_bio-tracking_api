@@ -1,0 +1,54 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Actions\RecordBioimpedanceAction;
+use App\Http\Controllers\Controller;
+use App\Http\Resources\ApiResponse;
+use App\Http\Resources\BioimpedanceResource;
+use App\Repositories\BioimpedanceRepository;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+class BioimpedanceController extends Controller
+{
+    public function __construct(private BioimpedanceRepository $repository) {}
+
+    public function index(string $memberId): JsonResponse
+    {
+        $records = $this->repository->findByMember($memberId);
+        return ApiResponse::success(BioimpedanceResource::collection($records));
+    }
+
+    public function store(Request $request, RecordBioimpedanceAction $action): JsonResponse
+    {
+        $validated = $request->validate([
+            'member_id' => 'required|exists:members,id',
+            'date' => 'required|date',
+            'height' => 'required|numeric',
+            'weight' => 'required|numeric',
+            'imc' => 'required|numeric',
+            'body_fat_percentage' => 'required|numeric',
+            'muscle_mass_percentage' => 'required|numeric',
+            'kcal' => 'required|numeric',
+            'metabolic_age' => 'required|numeric',
+            'visceral_fat_percentage' => 'required|numeric',
+            'notes' => 'nullable|string',
+        ]);
+
+        $record = $action->execute($validated);
+
+        return ApiResponse::success(new BioimpedanceResource($record), 'Registro de bioimpedancia guardado.', 201);
+    }
+
+    public function destroy(string $id): JsonResponse
+    {
+        $success = $this->repository->delete($id);
+
+        if (!$success) {
+            return ApiResponse::error('No se pudo eliminar el registro.', 400);
+        }
+
+        return ApiResponse::success(null, 'Registro eliminado exitosamente.');
+    }
+}
