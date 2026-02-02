@@ -41,6 +41,41 @@ class BioimpedanceController extends Controller
         return ApiResponse::success(new BioimpedanceResource($record), 'Registro de bioimpedancia guardado.', 201);
     }
 
+    public function show(string $id): JsonResponse
+    {
+        $record = $this->repository->find($id);
+
+        if (!$record) {
+            return ApiResponse::error('Registro no encontrado.', 404);
+        }
+
+        return ApiResponse::success(new BioimpedanceResource($record));
+    }
+
+    public function update(Request $request, string $id): JsonResponse
+    {
+        $validated = $request->validate([
+            'date' => 'sometimes|date',
+            'height' => 'sometimes|numeric',
+            'weight' => 'sometimes|numeric',
+            'imc' => 'sometimes|numeric',
+            'body_fat_percentage' => 'sometimes|numeric',
+            'muscle_mass_percentage' => 'sometimes|numeric',
+            'kcal' => 'sometimes|numeric',
+            'metabolic_age' => 'sometimes|numeric',
+            'visceral_fat_percentage' => 'sometimes|numeric',
+            'notes' => 'nullable|string',
+        ]);
+
+        $success = $this->repository->update($id, $validated);
+
+        if (!$success) {
+            return ApiResponse::error('No se pudo actualizar el registro.', 400);
+        }
+
+        return ApiResponse::success(new BioimpedanceResource($this->repository->find($id)), 'Registro actualizado exitosamente.');
+    }
+
     public function destroy(string $id): JsonResponse
     {
         $success = $this->repository->delete($id);

@@ -36,6 +36,36 @@ class PaymentController extends Controller
         return ApiResponse::success(new PaymentResource($payment), 'Pago registrado exitosamente.', 201);
     }
 
+    public function show(string $id): JsonResponse
+    {
+        $payment = $this->repository->find($id);
+
+        if (!$payment) {
+            return ApiResponse::error('Pago no encontrado.', 404);
+        }
+
+        return ApiResponse::success(new PaymentResource($payment));
+    }
+
+    public function update(Request $request, string $id): JsonResponse
+    {
+        $validated = $request->validate([
+            'month' => 'sometimes|string|regex:/^\d{4}-\d{2}$/',
+            'amount' => 'sometimes|numeric',
+            'payment_date' => 'sometimes|date',
+            'status' => 'sometimes|string|in:paid,pending,overdue',
+            'notes' => 'nullable|string',
+        ]);
+
+        $success = $this->repository->update($id, $validated);
+
+        if (!$success) {
+            return ApiResponse::error('No se pudo actualizar el pago.', 400);
+        }
+
+        return ApiResponse::success(new PaymentResource($this->repository->find($id)), 'Pago actualizado exitosamente.');
+    }
+
     public function destroy(string $id): JsonResponse
     {
         $success = $this->repository->delete($id);

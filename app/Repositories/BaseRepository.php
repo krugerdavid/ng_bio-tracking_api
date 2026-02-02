@@ -28,4 +28,11 @@ abstract class BaseRepository
     {
         return $this->model->destroy($id) > 0;
     }
+
+    public function update(string $id, array $data): bool
+    {
+        $record = $this->find($id);
+        if (!$record) return false;
+        return $record->update($data);
+    }
 }

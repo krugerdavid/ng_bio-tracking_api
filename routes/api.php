@@ -20,12 +20,16 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Bioimpedance
     Route::get('members/{memberId}/bioimpedance', [BioimpedanceController::class, 'index']);
+    Route::get('bioimpedances/{id}', [BioimpedanceController::class, 'show']);
     Route::post('bioimpedances', [BioimpedanceController::class, 'store']);
+    Route::put('bioimpedances/{id}', [BioimpedanceController::class, 'update']);
     Route::delete('bioimpedances/{id}', [BioimpedanceController::class, 'destroy']);
 
     // Payments
     Route::get('members/{memberId}/payments', [PaymentController::class, 'index']);
+    Route::get('payments/{id}', [PaymentController::class, 'show']);
     Route::post('payments', [PaymentController::class, 'store']);
+    Route::put('payments/{id}', [PaymentController::class, 'update']);
     Route::delete('payments/{id}', [PaymentController::class, 'destroy']);
 
     // Membership Plans
