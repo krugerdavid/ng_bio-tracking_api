@@ -25,6 +25,23 @@ class MembershipPlanController extends Controller
         return ApiResponse::success(new MembershipPlanResource($plan));
     }
 
+    public function store(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'member_id' => 'required|exists:members,id',
+            'monthly_fee' => 'required|numeric|min:0',
+            'weekly_frequency' => 'required|integer|min:1|max:5',
+            'start_date' => 'required|date',
+            'is_active' => 'sometimes|boolean',
+        ]);
+
+        $validated['is_active'] = $validated['is_active'] ?? true;
+
+        $plan = $this->repository->create($validated);
+
+        return ApiResponse::success(new MembershipPlanResource($plan), 'Plan creado exitosamente.', 201);
+    }
+
     public function update(Request $request, string $id, UpdateMembershipPlanAction $action): JsonResponse
     {
         $validated = $request->validate([

@@ -34,5 +34,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Membership Plans
     Route::get('members/{memberId}/plan', [MembershipPlanController::class, 'showByMember']);
+    Route::post('plans', [MembershipPlanController::class, 'store']);
     Route::put('plans/{id}', [MembershipPlanController::class, 'update']);
 });
