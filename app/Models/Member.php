@@ -2,15 +2,17 @@
 
 namespace App\Models;
 
+use App\Contracts\AuditableContract;
+use App\Traits\Auditable;
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-class Member extends Model
+class Member extends Model implements AuditableContract
 {
-    use HasFactory, HasUuid;
+    use Auditable, HasFactory, HasUuid;
 
     protected $fillable = [
         'name',

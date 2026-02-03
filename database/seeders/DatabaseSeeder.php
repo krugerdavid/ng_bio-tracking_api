@@ -19,9 +19,9 @@ class DatabaseSeeder extends Seeder
     {
         // Create Admin User
         $admin = User::create([
-            'name' => 'Admin User',
-            'email' => 'admin@biotracker.com',
-            'password' => Hash::make('password'),
+            'name' => 'Nico Gabadian',
+            'email' => 'nicogabadian2@gmail.com',
+            'password' => Hash::make('0600pro'),
             'role' => 'admin',
         ]);
 

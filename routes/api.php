@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AuditLogController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BioimpedanceController;
 use App\Http\Controllers\Api\MemberController;
@@ -36,4 +37,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('members/{memberId}/plan', [MembershipPlanController::class, 'showByMember']);
     Route::post('plans', [MembershipPlanController::class, 'store']);
     Route::put('plans/{id}', [MembershipPlanController::class, 'update']);
+
+    // Audit log (read-only)
+    Route::get('audit-logs', [AuditLogController::class, 'index']);
+    Route::get('audit-logs/{id}', [AuditLogController::class, 'show']);
 });
