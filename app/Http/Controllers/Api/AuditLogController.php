@@ -13,6 +13,8 @@ class AuditLogController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
+        $this->authorize('viewAny', AuditLog::class);
+
         $query = AuditLog::query()->with('user');
 
         if ($request->filled('auditable_type')) {
@@ -50,6 +52,7 @@ class AuditLogController extends Controller
         if (! $log) {
             return ApiResponse::error('Entrada de auditoría no encontrada.', 404);
         }
+        $this->authorize('view', $log);
 
         return ApiResponse::success(new AuditLogResource($log));
     }

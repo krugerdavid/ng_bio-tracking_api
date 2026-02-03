@@ -6,6 +6,7 @@ use App\Actions\RecordBioimpedanceAction;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ApiResponse;
 use App\Http\Resources\BioimpedanceResource;
+use App\Models\Member;
 use App\Repositories\BioimpedanceRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -14,8 +15,14 @@ class BioimpedanceController extends Controller
 {
     public function __construct(private BioimpedanceRepository $repository) {}
 
-    public function index(string $memberId): JsonResponse
+    public function index(Request $request, string $memberId): JsonResponse
     {
+        $member = Member::find($memberId);
+        if (! $member) {
+            return ApiResponse::error('Miembro no encontrado.', 404);
+        }
+        $this->authorize('view', $member);
+
         $records = $this->repository->findByMember($memberId);
         return ApiResponse::success(BioimpedanceResource::collection($records));
     }
@@ -36,6 +43,9 @@ class BioimpedanceController extends Controller
             'notes' => 'nullable|string',
         ]);
 
+        $member = Member::find($validated['member_id']);
+        $this->authorize('view', $member);
+
         $record = $action->execute($validated);
 
         return ApiResponse::success(new BioimpedanceResource($record), 'Registro de bioimpedancia guardado.', 201);
@@ -45,15 +55,22 @@ class BioimpedanceController extends Controller
     {
         $record = $this->repository->find($id);
 
-        if (!$record) {
+        if (! $record) {
             return ApiResponse::error('Registro no encontrado.', 404);
         }
+        $this->authorize('view', $record);
 
         return ApiResponse::success(new BioimpedanceResource($record));
     }
 
     public function update(Request $request, string $id): JsonResponse
     {
+        $record = $this->repository->find($id);
+        if (! $record) {
+            return ApiResponse::error('Registro no encontrado.', 404);
+        }
+        $this->authorize('update', $record);
+
         $validated = $request->validate([
             'date' => 'sometimes|date',
             'height' => 'sometimes|numeric',
@@ -78,9 +95,15 @@ class BioimpedanceController extends Controller
 
     public function destroy(string $id): JsonResponse
     {
+        $record = $this->repository->find($id);
+        if (! $record) {
+            return ApiResponse::error('Registro no encontrado.', 404);
+        }
+        $this->authorize('delete', $record);
+
         $success = $this->repository->delete($id);
 
-        if (!$success) {
+        if (! $success) {
             return ApiResponse::error('No se pudo eliminar el registro.', 400);
         }
 

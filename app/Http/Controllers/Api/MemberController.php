@@ -18,9 +18,12 @@ class MemberController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $members = $this->repository->search(
+        $this->authorize('viewAny', \App\Models\Member::class);
+
+        $members = $this->repository->searchForUser(
+            $request->user(),
             $request->query('search'),
-            $request->query('page_size', 15)
+            max(1, min(100, (int) $request->query('page_size', 15)))
         );
 
         return ApiResponse::success(
@@ -31,6 +34,8 @@ class MemberController extends Controller
 
     public function store(Request $request, CreateMemberAction $action): JsonResponse
     {
+        $this->authorize('create', \App\Models\Member::class);
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'document_number' => 'nullable|string|unique:members,document_number',
@@ -48,9 +53,11 @@ class MemberController extends Controller
     {
         $member = $this->repository->find($id);
 
-        if (!$member) {
+        if (! $member) {
             return ApiResponse::error('Miembro no encontrado.', 404);
         }
+
+        $this->authorize('view', $member);
 
         $member->load('membershipPlan');
 
@@ -59,6 +66,12 @@ class MemberController extends Controller
 
     public function update(Request $request, string $id, UpdateMemberAction $action): JsonResponse
     {
+        $member = $this->repository->find($id);
+        if (! $member) {
+            return ApiResponse::error('Miembro no encontrado.', 404);
+        }
+        $this->authorize('update', $member);
+
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
             'document_number' => 'nullable|string|unique:members,document_number,' . $id,
@@ -69,7 +82,7 @@ class MemberController extends Controller
 
         $success = $action->execute($id, $validated);
 
-        if (!$success) {
+        if (! $success) {
             return ApiResponse::error('No se pudo actualizar el miembro.', 400);
         }
 
@@ -78,9 +91,15 @@ class MemberController extends Controller
 
     public function destroy(string $id, DeleteMemberAction $action): JsonResponse
     {
+        $member = $this->repository->find($id);
+        if (! $member) {
+            return ApiResponse::error('Miembro no encontrado.', 404);
+        }
+        $this->authorize('delete', $member);
+
         $success = $action->execute($id);
 
-        if (!$success) {
+        if (! $success) {
             return ApiResponse::error('No se pudo eliminar el miembro.', 400);
         }
 

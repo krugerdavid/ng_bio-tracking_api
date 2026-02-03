@@ -18,7 +18,8 @@ class UserResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'email' => $this->email,
-            'role' => $this->role,
+            'role' => $this->role?->value,
+            'member_id' => $this->when($this->relationLoaded('member') && $this->member, $this->member?->id),
             'created_at' => $this->created_at,
         ];
     }

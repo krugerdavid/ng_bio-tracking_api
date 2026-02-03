@@ -7,6 +7,7 @@ use App\Traits\Auditable;
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
@@ -26,6 +27,14 @@ class Member extends Model implements AuditableContract
     protected $casts = [
         'date_of_birth' => 'date',
     ];
+
+    /**
+     * User account linked to this member (when member has login).
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 
     public function membershipPlan(): HasOne
     {

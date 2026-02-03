@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Enums\Role;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
@@ -23,6 +25,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
     ];
 
     /**
@@ -45,11 +48,44 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'role' => Role::class,
         ];
     }
 
     public function auditLogs(): HasMany
     {
-        return $this->hasMany(\App\Models\AuditLog::class, 'user_id');
+        return $this->hasMany(AuditLog::class, 'user_id');
+    }
+
+    /**
+     * Member profile linked to this user (when role is member).
+     * members.user_id points to this user.
+     */
+    public function member(): HasOne
+    {
+        return $this->hasOne(Member::class, 'user_id');
+    }
+
+    public function isRoot(): bool
+    {
+        return $this->role === Role::Root;
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === Role::Admin;
+    }
+
+    public function isMember(): bool
+    {
+        return $this->role === Role::Member;
+    }
+
+    /**
+     * Whether this user can access all members (root/admin); otherwise only own member.
+     */
+    public function canAccessAllMembers(): bool
+    {
+        return $this->isRoot() || $this->isAdmin();
     }
 }

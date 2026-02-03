@@ -4,8 +4,8 @@ use App\Models\Member;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
 
-test('authenticated user can list members', function () {
-    Sanctum::actingAs(User::factory()->create());
+test('authenticated admin can list members', function () {
+    Sanctum::actingAs(User::factory()->admin()->create());
     Member::factory()->count(3)->create();
 
     $response = $this->getJson('/api/members');
@@ -21,8 +21,8 @@ test('authenticated user can list members', function () {
         ]);
 });
 
-test('authenticated user can create member', function () {
-    Sanctum::actingAs(User::factory()->create());
+test('authenticated admin can create member', function () {
+    Sanctum::actingAs(User::factory()->admin()->create());
 
     $response = $this->postJson('/api/members', [
         'name' => 'New Member',
