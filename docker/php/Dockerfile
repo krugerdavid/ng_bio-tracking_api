@@ -3,8 +3,9 @@ FROM php:8.4-fpm-alpine
 # Set working directory
 WORKDIR /var/www
 
-# Install system dependencies
+# Install system dependencies (bash para shell interactivo, $PHPIZE_DEPS para compilar extensiones)
 RUN apk add --no-cache \
+    bash \
     curl \
     libpng-dev \
     libxml2-dev \
@@ -15,7 +16,8 @@ RUN apk add --no-cache \
     libzip-dev \
     oniguruma-dev \
     freetype-dev \
-    libjpeg-turbo-dev
+    libjpeg-turbo-dev \
+    $PHPIZE_DEPS
 
 # Install PHP extensions (pdo_mysql para conectar a MySQL en Docker/producción)
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
@@ -29,6 +31,10 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
         intl \
         zip \
         opcache
+
+# PCOV para code coverage (php artisan test --coverage)
+RUN pecl install pcov \
+    && docker-php-ext-enable pcov
 
 # Install composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer

@@ -20,11 +20,12 @@ class MemberRepository extends BaseRepository
     {
         $builder = $this->model->newQuery();
 
+        $like = '%' . addcslashes($query ?? '', '%_\\') . '%';
         if ($user->canAccessAllMembers()) {
-            if ($query) {
-                $builder->where(function ($q) use ($query) {
-                    $q->where('name', 'ilike', "%{$query}%")
-                        ->orWhere('document_number', 'ilike', "%{$query}%");
+            if ($query !== null && $query !== '') {
+                $builder->where(function ($q) use ($like) {
+                    $q->where('name', 'like', $like)
+                        ->orWhere('document_number', 'like', $like);
                 });
             }
             return $builder->latest()->paginate($perPage);
@@ -36,10 +37,10 @@ class MemberRepository extends BaseRepository
             return $this->model->newQuery()->whereRaw('1 = 0')->paginate($perPage);
         }
         $builder->where('id', $member->id);
-        if ($query) {
-            $builder->where(function ($q) use ($query) {
-                $q->where('name', 'ilike', "%{$query}%")
-                    ->orWhere('document_number', 'ilike', "%{$query}%");
+        if ($query !== null && $query !== '') {
+            $builder->where(function ($q) use ($like) {
+                $q->where('name', 'like', $like)
+                    ->orWhere('document_number', 'like', $like);
             });
         }
         return $builder->latest()->paginate($perPage);
@@ -49,9 +50,12 @@ class MemberRepository extends BaseRepository
     {
         $builder = $this->model->newQuery();
 
-        if ($query) {
-            $builder->where('name', 'ilike', "%{$query}%")
-                ->orWhere('document_number', 'ilike', "%{$query}%");
+        if ($query !== null && $query !== '') {
+            $like = '%' . addcslashes($query, '%_\\') . '%';
+            $builder->where(function ($q) use ($like) {
+                $q->where('name', 'like', $like)
+                    ->orWhere('document_number', 'like', $like);
+            });
         }
 
         return $builder->latest()->paginate($perPage);

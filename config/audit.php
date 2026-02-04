@@ -18,6 +18,7 @@ return [
         \App\Models\MembershipPlan::class,
         \App\Models\Payment::class,
         \App\Models\Bioimpedance::class,
+        \App\Models\User::class,
     ],
 
     /*
