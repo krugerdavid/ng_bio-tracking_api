@@ -22,3 +22,6 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Datos de MySQL en Docker (solo desarrollo local; no versionar)
+/docker/mysql/data/

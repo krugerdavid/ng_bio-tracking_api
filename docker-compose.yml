@@ -30,18 +30,19 @@ services:
       - bio-tracker-network
 
   db:
-    image: postgres:16-alpine
+    image: mysql:8.0
     container_name: bio-tracker-db
     restart: unless-stopped
     tty: true
     ports:
-      - "5432:5432"
+      - "3306:3306"
     environment:
-      POSTGRES_DB: bio_tracker
-      POSTGRES_USER: devuser
-      POSTGRES_PASSWORD: devpassword
+      MYSQL_DATABASE: bio_tracker
+      MYSQL_USER: devuser
+      MYSQL_PASSWORD: devpassword
+      MYSQL_ROOT_PASSWORD: rootpassword
     volumes:
-      - ./docker/postgres/data:/var/lib/postgresql/data
+      - ./docker/mysql/data:/var/lib/mysql
     networks:
       - bio-tracker-network
 

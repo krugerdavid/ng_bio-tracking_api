@@ -11,17 +11,16 @@ RUN apk add --no-cache \
     zip \
     unzip \
     git \
-    postgresql-dev \
     icu-dev \
     libzip-dev \
     oniguruma-dev \
     freetype-dev \
     libjpeg-turbo-dev
 
-# Install PHP extensions
+# Install PHP extensions (pdo_mysql para conectar a MySQL en Docker/producción)
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install \
-        pdo_pgsql \
+        pdo_mysql \
         mbstring \
         exif \
         pcntl \
