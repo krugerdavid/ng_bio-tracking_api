@@ -22,10 +22,12 @@ class Member extends Model implements AuditableContract
         'date_of_birth',
         'gender',
         'user_id',
+        'credit_balance',
     ];
 
     protected $casts = [
         'date_of_birth' => 'date',
+        'credit_balance' => 'float',
     ];
 
     /**

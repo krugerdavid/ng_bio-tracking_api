@@ -21,6 +21,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('users', UserController::class)->only(['index', 'store', 'show', 'update', 'destroy']);
 
     // Members
+    Route::get('members/{member}/debt', [MemberController::class, 'debtSummary'])->name('members.debt');
     Route::apiResource('members', MemberController::class);
 
     // Bioimpedance

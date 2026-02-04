@@ -11,12 +11,16 @@ use App\Http\Requests\Api\UpdateMemberRequest;
 use App\Http\Resources\ApiResponse;
 use App\Http\Resources\MemberResource;
 use App\Repositories\MemberRepository;
+use App\Services\MemberDebtService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class MemberController extends Controller
 {
-    public function __construct(private MemberRepository $repository) {}
+    public function __construct(
+        private MemberRepository $repository,
+        private MemberDebtService $debtService
+    ) {}
 
     public function index(Request $request): JsonResponse
     {
@@ -87,5 +91,21 @@ class MemberController extends Controller
         }
 
         return ApiResponse::success(null, 'Miembro eliminado exitosamente.');
+    }
+
+    /**
+     * Resumen de deuda del miembro: meses adeudados, total, saldo a favor y deuda tras descontar crédito.
+     */
+    public function debtSummary(string $memberId): JsonResponse
+    {
+        $member = $this->repository->find($memberId);
+        if (! $member) {
+            return ApiResponse::error('Miembro no encontrado.', 404);
+        }
+        $this->authorize('view', $member);
+
+        $summary = $this->debtService->getDebtSummary($member);
+
+        return ApiResponse::success($summary, 'Resumen de deuda.');
     }
 }

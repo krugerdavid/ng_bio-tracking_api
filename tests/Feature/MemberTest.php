@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Member;
+use App\Models\MembershipPlan;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
 
@@ -106,4 +107,35 @@ test('destroy member returns 404 for non-existent id', function () {
     Sanctum::actingAs(User::factory()->admin()->create());
     $response = $this->deleteJson('/api/members/00000000-0000-0000-0000-000000000000');
     $response->assertStatus(404);
+});
+
+test('debt summary returns monthly_fee owed_months total_debt credit_balance total_debt_after_credit', function () {
+    $member = Member::factory()->create();
+    MembershipPlan::factory()->for($member)->create([
+        'monthly_fee' => 100,
+        'start_date' => now()->subMonths(2),
+        'is_active' => true,
+    ]);
+    Sanctum::actingAs(User::factory()->admin()->create());
+    $response = $this->getJson('/api/members/' . $member->id . '/debt');
+    $response->assertStatus(200)
+        ->assertJsonStructure([
+            'data' => [
+                'monthly_fee',
+                'owed_months',
+                'months_owed',
+                'total_debt',
+                'credit_balance',
+                'total_debt_after_credit',
+            ],
+        ])
+        ->assertJsonPath('data.monthly_fee', 100)
+        ->assertJsonPath('data.credit_balance', 0);
+});
+
+test('member resource includes credit_balance', function () {
+    $member = Member::factory()->create(['credit_balance' => 25.5]);
+    Sanctum::actingAs(User::factory()->admin()->create());
+    $response = $this->getJson('/api/members/' . $member->id);
+    $response->assertStatus(200)->assertJsonPath('data.credit_balance', 25.5);
 });

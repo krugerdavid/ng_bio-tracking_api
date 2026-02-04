@@ -77,3 +77,19 @@ test('member role can see own member payment', function () {
     $response = $this->getJson('/api/payments/' . $payment->id);
     $response->assertStatus(200)->assertJson(['data' => ['id' => $payment->id]]);
 });
+
+test('payment with amount greater than monthly fee adds excess to member credit_balance', function () {
+    $member = Member::factory()->create();
+    \App\Models\MembershipPlan::factory()->for($member)->create(['monthly_fee' => 50, 'is_active' => true]);
+    Sanctum::actingAs(User::factory()->admin()->create());
+    $response = $this->postJson('/api/payments', [
+        'member_id' => $member->id,
+        'month' => now()->format('Y-m'),
+        'amount' => 80,
+        'payment_date' => now()->toDateString(),
+        'status' => 'paid',
+    ]);
+    $response->assertStatus(201);
+    $member->refresh();
+    expect((float) $member->credit_balance)->toBe(30.0);
+});

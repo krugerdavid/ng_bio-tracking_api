@@ -22,6 +22,7 @@ class MemberResource extends JsonResource
             'date_of_birth' => $this->date_of_birth ? $this->date_of_birth->format('Y-m-d') : null,
             'gender' => $this->gender,
             'user_id' => $this->user_id,
+            'credit_balance' => round((float) ($this->credit_balance ?? 0), 2),
             'plan' => new MembershipPlanResource($this->whenLoaded('membershipPlan')),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
