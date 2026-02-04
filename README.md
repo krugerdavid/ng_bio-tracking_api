@@ -12,6 +12,7 @@
 - **[MySQL en DigitalOcean (Managed Database)](docs/DIGITALOCEAN_MYSQL.md)** – Crear y conectar un cluster MySQL gestionado en DigitalOcean.
 - **[MySQL en un Droplet existente](docs/MYSQL_DROPLET.md)** – Añadir una base de datos nueva en un Droplet donde ya tienes Apache + MySQL (ej. WordPress).
 - **[CORS](docs/CORS.md)** – Configuración de CORS para la API (orígenes, credenciales, etc.).
+- **[Permisos en el servidor](docs/DEPLOYMENT_PERMISSIONS.md)** – Solución a "Permission denied" en `storage/logs` y nota sobre el error de Bcrypt.
 
 ## About Laravel
 

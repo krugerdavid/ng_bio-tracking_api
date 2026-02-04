@@ -16,11 +16,14 @@ class UserResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'user_id' => (string) $this->id,
             'name' => $this->name,
             'email' => $this->email,
             'role' => $this->role?->value,
+            'created_by' => null,
+            'created_at' => $this->created_at?->toIso8601String(),
+            'updated_at' => $this->updated_at?->toIso8601String(),
             'member_id' => $this->when($this->relationLoaded('member') && $this->member, $this->member?->id),
-            'created_at' => $this->created_at,
         ];
     }
 }

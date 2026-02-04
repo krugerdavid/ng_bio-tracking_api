@@ -7,33 +7,33 @@ use App\Models\User;
 class UserPolicy
 {
     /**
-     * Only root can list users.
+     * Root and admin can list users.
      */
     public function viewAny(User $user): bool
     {
-        return $user->isRoot();
+        return $user->isRoot() || $user->isAdmin();
     }
 
     public function view(User $user, User $model): bool
     {
-        return $user->isRoot();
+        return $user->isRoot() || $user->isAdmin();
     }
 
     /**
-     * Only root can create users; role must be admin or member.
+     * Root and admin can create users. Only root can create admin role (checked in controller).
      */
     public function create(User $user): bool
     {
-        return $user->isRoot();
+        return $user->isRoot() || $user->isAdmin();
     }
 
     public function update(User $user, User $model): bool
     {
-        return $user->isRoot();
+        return $user->isRoot() || $user->isAdmin();
     }
 
     public function delete(User $user, User $model): bool
     {
-        return $user->isRoot();
+        return $user->isRoot() || $user->isAdmin();
     }
 }

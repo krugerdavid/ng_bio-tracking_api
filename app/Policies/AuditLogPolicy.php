@@ -8,15 +8,15 @@ use App\Models\User;
 class AuditLogPolicy
 {
     /**
-     * Only root and admin can view audit logs.
+     * Only root can view audit logs.
      */
     public function viewAny(User $user): bool
     {
-        return $user->canAccessAllMembers();
+        return $user->isRoot();
     }
 
     public function view(User $user, AuditLog $auditLog): bool
     {
-        return $user->canAccessAllMembers();
+        return $user->isRoot();
     }
 }
