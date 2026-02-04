@@ -7,9 +7,12 @@ use App\Models\User;
 
 class PaymentPolicy
 {
+    /**
+     * Listado global de pagos (GET /payments): solo admin/root.
+     */
     public function viewAny(User $user): bool
     {
-        return true;
+        return $user->canAccessAllMembers();
     }
 
     public function view(User $user, Payment $payment): bool

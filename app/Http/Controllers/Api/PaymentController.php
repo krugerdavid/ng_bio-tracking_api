@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\ApiResponse;
 use App\Http\Resources\PaymentResource;
 use App\Models\Member;
+use App\Models\Payment;
 use App\Repositories\PaymentRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -14,6 +15,22 @@ use Illuminate\Http\Request;
 class PaymentController extends Controller
 {
     public function __construct(private PaymentRepository $repository) {}
+
+    /**
+     * List all payments (paginated, latest first). Solo admin/root.
+     */
+    public function list(Request $request): JsonResponse
+    {
+        $this->authorize('viewAny', Payment::class);
+
+        $perPage = max(1, min(100, (int) $request->query('per_page', 10)));
+        $paginator = $this->repository->listLatest($perPage);
+
+        return ApiResponse::success(
+            PaymentResource::collection($paginator)->response()->getData(true),
+            'Pagos recuperados.'
+        );
+    }
 
     public function index(Request $request, string $memberId): JsonResponse
     {
@@ -32,7 +49,7 @@ class PaymentController extends Controller
         $validated = $request->validate([
             'member_id' => 'required|exists:members,id',
             'month' => 'required|string|regex:/^\d{4}-\d{2}$/',
-            'amount' => 'required|numeric',
+            'amount' => 'required|numeric|min:0',
             'payment_date' => 'required|date',
             'status' => 'required|string|in:paid,pending,overdue',
             'notes' => 'nullable|string',

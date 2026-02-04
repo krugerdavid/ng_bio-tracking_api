@@ -21,7 +21,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('users', UserController::class)->only(['index', 'store', 'show', 'update', 'destroy']);
 
     // Members
-    Route::get('members/{member}/debt', [MemberController::class, 'debtSummary'])->name('members.debt');
+    Route::get('members/{memberId}/debt', [MemberController::class, 'debtSummary']);
     Route::apiResource('members', MemberController::class);
 
     // Bioimpedance
@@ -32,6 +32,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('bioimpedances/{id}', [BioimpedanceController::class, 'destroy']);
 
     // Payments
+    Route::get('payments', [PaymentController::class, 'list']);
     Route::get('members/{memberId}/payments', [PaymentController::class, 'index']);
     Route::get('payments/{id}', [PaymentController::class, 'show']);
     Route::post('payments', [PaymentController::class, 'store']);

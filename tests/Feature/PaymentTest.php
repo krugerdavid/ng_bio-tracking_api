@@ -11,6 +11,24 @@ test('unauthenticated user cannot list payments for member', function () {
     $response->assertStatus(401);
 });
 
+test('admin can list all payments (latest first)', function () {
+    $member = Member::factory()->create();
+    Payment::factory()->count(2)->for($member)->create();
+    Sanctum::actingAs(User::factory()->admin()->create());
+    $response = $this->getJson('/api/payments?per_page=10');
+    $response->assertStatus(200)->assertJsonStructure(['status', 'data' => ['data', 'meta']]);
+    expect($response->json('data.data'))->toHaveCount(2);
+});
+
+test('member role cannot list all payments', function () {
+    $member = Member::factory()->create();
+    $user = User::factory()->member()->create();
+    $member->update(['user_id' => $user->id]);
+    Sanctum::actingAs($user);
+    $response = $this->getJson('/api/payments?per_page=10');
+    $response->assertStatus(403);
+});
+
 test('payments index returns 404 when member not found', function () {
     Sanctum::actingAs(User::factory()->admin()->create());
     $response = $this->getJson('/api/members/00000000-0000-0000-0000-000000000000/payments');
