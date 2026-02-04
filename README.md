@@ -15,6 +15,7 @@
 - **[Permisos en el servidor](docs/DEPLOYMENT_PERMISSIONS.md)** – Solución a "Permission denied" en `storage/logs` y nota sobre el error de Bcrypt.
 - **[Base de datos (local vs producción)](docs/DATABASE.md)** – Local: SQLite o MySQL (Docker). Producción: MySQL.
 - **[Auditoría de estándares Laravel](docs/STANDARDS_AUDIT.md)** – Evaluación tipo senior: qué cumple, gaps y mejoras (tests, Form Requests, MySQL, etc.).
+- **[Cobertura de código](docs/CODE_COVERAGE.md)** – Por qué la cobertura ronda ~72% y qué no está cubierto.
 
 ## About Laravel
 
