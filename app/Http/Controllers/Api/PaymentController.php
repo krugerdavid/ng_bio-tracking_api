@@ -55,8 +55,12 @@ class PaymentController extends Controller
             'notes' => 'nullable|string',
         ]);
 
+        $this->authorize('create', Payment::class);
+
         $member = Member::find($validated['member_id']);
-        $this->authorize('view', $member);
+        if (! $member) {
+            return ApiResponse::error('Miembro no encontrado.', 404);
+        }
 
         $payment = $action->execute($validated);
 

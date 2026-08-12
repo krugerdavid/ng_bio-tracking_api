@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Actions\AcceptMemberInviteAction;
 use App\Actions\LoginAction;
 use App\Actions\LogoutAction;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\AcceptMemberInviteRequest;
 use App\Http\Resources\ApiResponse;
 use App\Http\Resources\UserResource;
 use Illuminate\Http\JsonResponse;
@@ -44,5 +46,22 @@ class AuthController extends Controller
         $user = $request->user();
         $user->load('member');
         return ApiResponse::success(new UserResource($user));
+    }
+
+    /**
+     * Aceptar invitación de miembro: setea contraseña con el token del email.
+     */
+    public function acceptInvite(AcceptMemberInviteRequest $request, AcceptMemberInviteAction $action): JsonResponse
+    {
+        try {
+            $user = $action->execute($request->validated());
+        } catch (ValidationException $e) {
+            return ApiResponse::error($e->getMessage(), 422, $e->errors());
+        }
+
+        return ApiResponse::success(
+            new UserResource($user),
+            'Acceso activado. Ya podés iniciar sesión.'
+        );
     }
 }

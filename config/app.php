@@ -56,6 +56,17 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Frontend URL (SPA)
+    |--------------------------------------------------------------------------
+    |
+    | Used for links in transactional emails (member invite, etc.).
+    | Production: https://ng-biotracker.netlify.app
+    |
+    */
+    'frontend_url' => env('FRONTEND_URL', env('APP_URL', 'http://localhost')),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |

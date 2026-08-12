@@ -27,10 +27,7 @@ class MembershipPlanPolicy
 
     public function update(User $user, MembershipPlan $plan): bool
     {
-        if ($user->canAccessAllMembers()) {
-            return true;
-        }
-        return $user->member && $user->member->id === $plan->member_id;
+        return $user->canAccessAllMembers();
     }
 
     public function delete(User $user, MembershipPlan $plan): bool

@@ -43,8 +43,12 @@ class BioimpedanceController extends Controller
             'notes' => 'nullable|string',
         ]);
 
+        $this->authorize('create', \App\Models\Bioimpedance::class);
+
         $member = Member::find($validated['member_id']);
-        $this->authorize('view', $member);
+        if (! $member) {
+            return ApiResponse::error('Miembro no encontrado.', 404);
+        }
 
         $record = $action->execute($validated);
 

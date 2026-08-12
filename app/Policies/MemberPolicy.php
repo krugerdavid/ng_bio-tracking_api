@@ -31,15 +31,23 @@ class MemberPolicy
         return $user->canAccessAllMembers();
     }
 
+    /**
+     * Solo admin/root editan fichas; member es lectura.
+     */
     public function update(User $user, Member $member): bool
     {
-        if ($user->canAccessAllMembers()) {
-            return true;
-        }
-        return $user->member?->id === $member->id;
+        return $user->canAccessAllMembers();
     }
 
     public function delete(User $user, Member $member): bool
+    {
+        return $user->canAccessAllMembers();
+    }
+
+    /**
+     * Invitar / reenviar acceso a la app (crea User + mail).
+     */
+    public function invite(User $user, Member $member): bool
     {
         return $user->canAccessAllMembers();
     }

@@ -17,6 +17,8 @@
 - **[Auditoría de estándares Laravel](docs/STANDARDS_AUDIT.md)** – Evaluación tipo senior: qué cumple, gaps y mejoras (tests, Form Requests, MySQL, etc.).
 - **[Cobertura de código](docs/CODE_COVERAGE.md)** – Por qué la cobertura ronda ~72% y qué no está cubierto.
 - **[Saldo a favor (credit balance)](docs/SALDO_A_FAVOR.md)** – Excedentes de pago como crédito del deportista y cálculo de deuda.
+- **[Correo con Resend](docs/RESEND_EMAIL.md)** – Envío de mails (invites, etc.) desde ng-api en DigitalOcean + links a bio-tracker en Netlify.
+- **[Invitación de miembros](docs/MEMBER_INVITE.md)** – Dar acceso a la app (invite + accept + portal link).
 
 ## About Laravel
 

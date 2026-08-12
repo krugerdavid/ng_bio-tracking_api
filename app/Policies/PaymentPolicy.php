@@ -30,17 +30,11 @@ class PaymentPolicy
 
     public function update(User $user, Payment $payment): bool
     {
-        if ($user->canAccessAllMembers()) {
-            return true;
-        }
-        return $user->member && $user->member->id === $payment->member_id;
+        return $user->canAccessAllMembers();
     }
 
     public function delete(User $user, Payment $payment): bool
     {
-        if ($user->canAccessAllMembers()) {
-            return true;
-        }
-        return $user->member && $user->member->id === $payment->member_id;
+        return $user->canAccessAllMembers();
     }
 }

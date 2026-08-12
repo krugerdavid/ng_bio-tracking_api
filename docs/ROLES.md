@@ -14,14 +14,17 @@ Tres niveles de acceso: **root**, **admin** y **member**. Autorización con pol�
 
 - **members.user_id** (nullable): cuando un usuario tiene rol `member`, puede estar vinculado a un único `Member` (su ficha).
 - **User** tiene `member()` (hasOne) y **Member** tiene `user()` (belongsTo).
-- En el futuro: al dar de alta un usuario `member`, se puede crear o vincular un `Member` y asignar `member.user_id = user.id`.
+- **Invite:** `POST /api/members/{id}/invite` crea/vincula el User y envía el mail. Ver [MEMBER_INVITE.md](MEMBER_INVITE.md).
 - El endpoint `GET /api/me` devuelve `member_id` cuando el usuario tiene rol member y está vinculado a un miembro.
 
-## Crear usuarios (solo root)
+## Crear usuarios (root / admin según UserPolicy)
 
 - **POST /api/users**: crear usuario con `role: admin` o `role: member`. No se puede asignar `root` por API.
-- Validación: `role` debe ser `admin` o `member`.
-- **GET/PUT/DELETE /api/users/{id}**: solo root.
+- Preferir **invite** para miembros atletas (vincula ficha + mail), no solo `POST /users`.
+
+## Acceso member (read-only)
+
+El rol **member** puede **ver** su ficha, bioimpedancia, pagos, plan y deuda. No puede crear/editar/eliminar esos recursos ni invitar.
 
 ## Cómo está implementado (DRY)
 

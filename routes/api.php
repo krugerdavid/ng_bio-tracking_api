@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Route;
 
 // Public routes
 Route::post('/login', [AuthController::class, 'login'])->name('login');
+Route::post('/invite/accept', [AuthController::class, 'acceptInvite'])
+    ->middleware('throttle:10,1');
 
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
@@ -22,6 +24,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Members
     Route::get('members/{memberId}/debt', [MemberController::class, 'debtSummary']);
+    Route::post('members/{member}/invite', [MemberController::class, 'invite'])
+        ->middleware('throttle:10,1');
     Route::apiResource('members', MemberController::class);
 
     // Bioimpedance

@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Actions\CreateMemberAction;
 use App\Actions\DeleteMemberAction;
+use App\Actions\InviteMemberAction;
 use App\Actions\UpdateMemberAction;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\InviteMemberRequest;
 use App\Http\Requests\Api\StoreMemberRequest;
 use App\Http\Requests\Api\UpdateMemberRequest;
 use App\Http\Resources\ApiResponse;
@@ -14,6 +16,7 @@ use App\Repositories\MemberRepository;
 use App\Services\MemberDebtService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class MemberController extends Controller
 {
@@ -107,5 +110,31 @@ class MemberController extends Controller
         $summary = $this->debtService->getDebtSummary($member);
 
         return ApiResponse::success($summary, 'Resumen de deuda.');
+    }
+
+    /**
+     * Invitar (o reenviar) acceso a la app: crea/vincula User role=member y envía email.
+     */
+    public function invite(InviteMemberRequest $request, string $member, InviteMemberAction $action): JsonResponse
+    {
+        $model = $this->repository->find($member);
+        if (! $model) {
+            return ApiResponse::error('Miembro no encontrado.', 404);
+        }
+
+        try {
+            $result = $action->execute($model, $request->validated());
+        } catch (ValidationException $e) {
+            return ApiResponse::error($e->getMessage(), 422, $e->errors());
+        }
+
+        $message = $result['resent']
+            ? 'Invitación reenviada a '.$result['email'].'.'
+            : 'Invitación enviada a '.$result['email'].'.';
+
+        return ApiResponse::success(
+            new MemberResource($result['member']),
+            $message
+        );
     }
 }
