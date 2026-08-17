@@ -2,6 +2,7 @@
 
 namespace App\Actions;
 
+use App\Enums\UserStatus;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
@@ -23,6 +24,18 @@ class LoginAction implements Action
         if (!$user || !Hash::check($password, $user->password)) {
             throw ValidationException::withMessages([
                 'email' => ['Las credenciales proporcionadas son incorrectas.'],
+            ]);
+        }
+
+        if ($user->status === UserStatus::Pending) {
+            throw ValidationException::withMessages([
+                'email' => ['Tu registro está pendiente de aprobación. El profe te va a avisar apenas lo confirme.'],
+            ]);
+        }
+
+        if ($user->status === UserStatus::Rejected) {
+            throw ValidationException::withMessages([
+                'email' => ['Tu registro no fue aprobado. Contactá al profe para más información.'],
             ]);
         }
 

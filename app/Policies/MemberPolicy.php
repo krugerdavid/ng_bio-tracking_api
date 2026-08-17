@@ -51,4 +51,12 @@ class MemberPolicy
     {
         return $user->canAccessAllMembers();
     }
+
+    /**
+     * Aprobar un registro público pendiente.
+     */
+    public function approve(User $user, Member $member): bool
+    {
+        return $user->canAccessAllMembers();
+    }
 }

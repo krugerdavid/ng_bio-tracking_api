@@ -23,6 +23,7 @@ class StoreMemberRequest extends FormRequest
             'email' => ['nullable', 'email', 'unique:members,email'],
             'date_of_birth' => ['nullable', 'date'],
             'gender' => ['nullable', 'string', 'in:male,female,other'],
+            'training_group' => ['nullable', 'string', 'max:50'],
         ];
     }
 }

@@ -16,18 +16,33 @@ class MemberRepository extends BaseRepository
     /**
      * Search members scoped by user role: root/admin see all, member sees only their own.
      */
-    public function searchForUser(User $user, ?string $query, int $perPage = 15): LengthAwarePaginator
-    {
-        $builder = $this->model->newQuery();
+    public function searchForUser(
+        User $user,
+        ?string $query,
+        int $perPage = 15,
+        ?string $trainingGroup = null,
+        ?string $status = null
+    ): LengthAwarePaginator {
+        $builder = $this->model->newQuery()->with('user');
 
         $like = '%' . addcslashes($query ?? '', '%_\\') . '%';
-        if ($user->canAccessAllMembers()) {
+        $applyFilters = function ($builder) use ($like, $query, $trainingGroup, $status) {
             if ($query !== null && $query !== '') {
                 $builder->where(function ($q) use ($like) {
                     $q->where('name', 'like', $like)
                         ->orWhere('document_number', 'like', $like);
                 });
             }
+            if ($trainingGroup !== null && $trainingGroup !== '') {
+                $builder->where('training_group', $trainingGroup);
+            }
+            if ($status !== null && $status !== '') {
+                $builder->whereHas('user', fn ($q) => $q->where('status', $status));
+            }
+        };
+
+        if ($user->canAccessAllMembers()) {
+            $applyFilters($builder);
             return $builder->latest()->paginate($perPage);
         }
 
@@ -37,12 +52,7 @@ class MemberRepository extends BaseRepository
             return $this->model->newQuery()->whereRaw('1 = 0')->paginate($perPage);
         }
         $builder->where('id', $member->id);
-        if ($query !== null && $query !== '') {
-            $builder->where(function ($q) use ($like) {
-                $q->where('name', 'like', $like)
-                    ->orWhere('document_number', 'like', $like);
-            });
-        }
+        $applyFilters($builder);
         return $builder->latest()->paginate($perPage);
     }
 

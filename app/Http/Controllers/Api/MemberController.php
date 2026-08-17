@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Actions\ApproveMemberAction;
 use App\Actions\CreateMemberAction;
 use App\Actions\DeleteMemberAction;
 use App\Actions\InviteMemberAction;
@@ -32,7 +33,9 @@ class MemberController extends Controller
         $members = $this->repository->searchForUser(
             $request->user(),
             $request->query('search'),
-            max(1, min(100, (int) $request->query('page_size', 15)))
+            max(1, min(100, (int) $request->query('page_size', 15))),
+            $request->query('training_group'),
+            $request->query('status')
         );
 
         return ApiResponse::success(
@@ -58,7 +61,7 @@ class MemberController extends Controller
 
         $this->authorize('view', $member);
 
-        $member->load('membershipPlan');
+        $member->load('membershipPlan', 'user');
 
         return ApiResponse::success(new MemberResource($member));
     }
@@ -136,5 +139,26 @@ class MemberController extends Controller
             new MemberResource($result['member']),
             $message
         );
+    }
+
+    /**
+     * Aprobar un registro público pendiente: activa la cuenta del alumno.
+     */
+    public function approve(string $member, ApproveMemberAction $action): JsonResponse
+    {
+        $model = $this->repository->find($member);
+        if (! $model) {
+            return ApiResponse::error('Miembro no encontrado.', 404);
+        }
+
+        $this->authorize('approve', $model);
+
+        try {
+            $result = $action->execute($model);
+        } catch (ValidationException $e) {
+            return ApiResponse::error($e->getMessage(), 422, $e->errors());
+        }
+
+        return ApiResponse::success(new MemberResource($result), 'Registro aprobado. El alumno ya puede iniciar sesión.');
     }
 }

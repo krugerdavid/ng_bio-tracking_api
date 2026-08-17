@@ -28,6 +28,7 @@ class UpdateMemberRequest extends FormRequest
             'email' => ['nullable', 'email', Rule::unique('members', 'email')->ignore($id)],
             'date_of_birth' => ['nullable', 'date'],
             'gender' => ['nullable', 'string', 'in:male,female,other'],
+            'training_group' => ['nullable', 'string', 'max:50'],
         ];
     }
 }

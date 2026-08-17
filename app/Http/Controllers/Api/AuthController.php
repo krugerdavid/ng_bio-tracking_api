@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Api;
 use App\Actions\AcceptMemberInviteAction;
 use App\Actions\LoginAction;
 use App\Actions\LogoutAction;
+use App\Actions\RegisterMemberAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\AcceptMemberInviteRequest;
+use App\Http\Requests\Api\RegisterRequest;
 use App\Http\Resources\ApiResponse;
 use App\Http\Resources\UserResource;
 use Illuminate\Http\JsonResponse;
@@ -46,6 +48,20 @@ class AuthController extends Controller
         $user = $request->user();
         $user->load('member');
         return ApiResponse::success(new UserResource($user));
+    }
+
+    /**
+     * Auto-registro público de un alumno: queda pendiente de aprobación del profe.
+     */
+    public function register(RegisterRequest $request, RegisterMemberAction $action): JsonResponse
+    {
+        $action->execute($request->validated());
+
+        return ApiResponse::success(
+            null,
+            'Tu registro fue enviado. El profe va a revisar tu solicitud y te avisará cuando puedas ingresar.',
+            201
+        );
     }
 
     /**

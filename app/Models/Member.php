@@ -21,6 +21,7 @@ class Member extends Model implements AuditableContract
         'email',
         'date_of_birth',
         'gender',
+        'training_group',
         'user_id',
         'credit_balance',
     ];
