@@ -27,6 +27,7 @@ class BioimpedanceResource extends JsonResource
             'metabolic_age' => $this->metabolic_age,
             'visceral_fat_percentage' => $this->visceral_fat_percentage,
             'notes' => $this->notes,
+            'status' => $this->status?->value,
             'created_at' => $this->created_at,
         ];
     }

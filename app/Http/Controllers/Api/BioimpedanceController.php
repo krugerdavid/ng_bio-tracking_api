@@ -29,28 +29,37 @@ class BioimpedanceController extends Controller
 
     public function store(Request $request, RecordBioimpedanceAction $action): JsonResponse
     {
-        $validated = $request->validate([
-            'member_id' => 'required|exists:members,id',
+        $user = $request->user();
+
+        $rules = [
             'date' => 'required|date',
-            'height' => 'required|numeric',
             'weight' => 'required|numeric',
-            'imc' => 'required|numeric',
-            'body_fat_percentage' => 'required|numeric',
-            'muscle_mass_percentage' => 'required|numeric',
-            'kcal' => 'required|numeric',
-            'metabolic_age' => 'required|numeric',
-            'visceral_fat_percentage' => 'required|numeric',
+            'height' => 'nullable|numeric',
+            'imc' => 'nullable|numeric',
+            'body_fat_percentage' => 'nullable|numeric',
+            'muscle_mass_percentage' => 'nullable|numeric',
+            'kcal' => 'nullable|numeric',
+            'metabolic_age' => 'nullable|numeric',
+            'visceral_fat_percentage' => 'nullable|numeric',
             'notes' => 'nullable|string',
-        ]);
+        ];
+        if ($user->canAccessAllMembers()) {
+            $rules['member_id'] = 'required|exists:members,id';
+        }
+        $validated = $request->validate($rules);
 
         $this->authorize('create', \App\Models\Bioimpedance::class);
 
-        $member = Member::find($validated['member_id']);
-        if (! $member) {
-            return ApiResponse::error('Miembro no encontrado.', 404);
+        if ($user->canAccessAllMembers()) {
+            $member = Member::find($validated['member_id']);
+            if (! $member) {
+                return ApiResponse::error('Miembro no encontrado.', 404);
+            }
+        } elseif (! $user->member) {
+            return ApiResponse::error('Tu cuenta no tiene una ficha de alumno vinculada.', 422);
         }
 
-        $record = $action->execute($validated);
+        $record = $action->execute($validated, $user);
 
         return ApiResponse::success(new BioimpedanceResource($record), 'Registro de bioimpedancia guardado.', 201);
     }
@@ -75,7 +84,7 @@ class BioimpedanceController extends Controller
         }
         $this->authorize('update', $record);
 
-        $validated = $request->validate([
+        $rules = [
             'date' => 'sometimes|date',
             'height' => 'sometimes|numeric',
             'weight' => 'sometimes|numeric',
@@ -86,7 +95,11 @@ class BioimpedanceController extends Controller
             'metabolic_age' => 'sometimes|numeric',
             'visceral_fat_percentage' => 'sometimes|numeric',
             'notes' => 'nullable|string',
-        ]);
+        ];
+        if ($request->user()->canAccessAllMembers()) {
+            $rules['status'] = 'sometimes|string|in:pending,confirmed';
+        }
+        $validated = $request->validate($rules);
 
         $success = $this->repository->update($id, $validated);
 

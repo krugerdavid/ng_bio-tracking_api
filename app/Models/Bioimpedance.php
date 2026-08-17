@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\BioimpedanceStatus;
 use App\Contracts\AuditableContract;
 use App\Traits\Auditable;
 use App\Traits\HasUuid;
@@ -25,6 +26,7 @@ class Bioimpedance extends Model implements AuditableContract
         'metabolic_age',
         'visceral_fat_percentage',
         'notes',
+        'status',
     ];
 
     protected $casts = [
@@ -37,6 +39,7 @@ class Bioimpedance extends Model implements AuditableContract
         'kcal' => 'float',
         'metabolic_age' => 'float',
         'visceral_fat_percentage' => 'float',
+        'status' => BioimpedanceStatus::class,
     ];
 
     public function member(): BelongsTo

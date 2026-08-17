@@ -50,7 +50,7 @@ test('create bioimpedance returns 422 when validation fails', function () {
         'member_id' => 'invalid',
         'date' => 'not-a-date',
     ]);
-    $response->assertStatus(422)->assertJsonValidationErrors(['member_id', 'date', 'height', 'weight', 'imc', 'body_fat_percentage', 'muscle_mass_percentage', 'kcal', 'metabolic_age', 'visceral_fat_percentage']);
+    $response->assertStatus(422)->assertJsonValidationErrors(['member_id', 'date', 'weight']);
 });
 
 test('show bioimpedance returns 404 for non-existent id', function () {

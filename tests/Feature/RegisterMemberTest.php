@@ -1,7 +1,10 @@
 <?php
 
+use App\Mail\NewRegistrationAdminMail;
+use App\Mail\WelcomeMemberMail;
 use App\Models\Member;
 use App\Models\User;
+use Illuminate\Support\Facades\Mail;
 use Laravel\Sanctum\Sanctum;
 
 test('register creates pending user and member without token', function () {
@@ -30,6 +33,30 @@ test('register creates pending user and member without token', function () {
     $user = User::where('email', 'alumno@example.com')->first();
     $member = Member::where('email', 'alumno@example.com')->first();
     expect((int) $member->user_id)->toBe($user->id);
+});
+
+test('register sends a welcome mail to the member and a notification to each admin/root', function () {
+    Mail::fake();
+
+    $admin = User::factory()->admin()->create(['email' => 'nico@example.com']);
+    $root = User::factory()->root()->create(['email' => 'root@example.com']);
+    User::factory()->member()->create(['email' => 'otro-alumno@example.com']);
+
+    $this->postJson('/api/register', [
+        'name' => 'Nuevo Alumno',
+        'email' => 'alumno-mail@example.com',
+        'training_group' => '06:00',
+        'password' => 'Password123!',
+        'password_confirmation' => 'Password123!',
+    ])->assertStatus(201);
+
+    Mail::assertQueued(WelcomeMemberMail::class, function (WelcomeMemberMail $mail) {
+        return $mail->hasTo('alumno-mail@example.com') && $mail->member->name === 'Nuevo Alumno';
+    });
+
+    Mail::assertQueued(NewRegistrationAdminMail::class, 2);
+    Mail::assertQueued(NewRegistrationAdminMail::class, fn (NewRegistrationAdminMail $mail) => $mail->hasTo($admin->email));
+    Mail::assertQueued(NewRegistrationAdminMail::class, fn (NewRegistrationAdminMail $mail) => $mail->hasTo($root->email));
 });
 
 test('register rejects duplicate email already used by a user', function () {
