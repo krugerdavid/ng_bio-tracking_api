@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\BioimpedanceController;
 use App\Http\Controllers\Api\MemberController;
 use App\Http\Controllers\Api\MembershipPlanController;
 use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -54,4 +55,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Audit log (read-only)
     Route::get('audit-logs', [AuditLogController::class, 'index']);
     Route::get('audit-logs/{id}', [AuditLogController::class, 'show']);
+
+    // Reports (dashboard)
+    Route::get('reports/revenue', [ReportController::class, 'revenue']);
 });
