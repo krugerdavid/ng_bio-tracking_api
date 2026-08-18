@@ -7,6 +7,7 @@ use App\Http\Resources\ApiResponse;
 use App\Models\Member;
 use App\Models\Payment;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class ReportController extends Controller
 {
@@ -35,5 +36,31 @@ class ReportController extends Controller
             'monthly' => $monthly,
             'credit_balance_total' => $creditBalanceTotal,
         ], 'Resumen de ingresos.');
+    }
+
+    /**
+     * Miembros activos cuyo usuario nunca inició sesión.
+     */
+    public function engagement(Request $request): JsonResponse
+    {
+        abort_unless($request->user()->canAccessAllMembers(), 403);
+
+        $neverLoggedIn = Member::query()
+            ->whereHas('user', function ($q) {
+                $q->where('status', 'active')->whereNull('last_login_at');
+            })
+            ->orderBy('name')
+            ->get(['id', 'name', 'email', 'training_group'])
+            ->map(fn (Member $m) => [
+                'id' => $m->id,
+                'name' => $m->name,
+                'email' => $m->email,
+                'training_group' => $m->training_group,
+            ]);
+
+        return ApiResponse::success([
+            'never_logged_in_count' => $neverLoggedIn->count(),
+            'never_logged_in' => $neverLoggedIn,
+        ], 'Resumen de actividad.');
     }
 }

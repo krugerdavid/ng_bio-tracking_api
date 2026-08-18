@@ -29,6 +29,7 @@ class User extends Authenticatable
         'password',
         'role',
         'status',
+        'last_login_at',
     ];
 
     /**
@@ -53,6 +54,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'role' => Role::class,
             'status' => UserStatus::class,
+            'last_login_at' => 'datetime',
         ];
     }
 

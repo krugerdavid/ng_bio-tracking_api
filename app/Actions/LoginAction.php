@@ -39,6 +39,8 @@ class LoginAction implements Action
             ]);
         }
 
+        $user->update(['last_login_at' => now()]);
+
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return [
