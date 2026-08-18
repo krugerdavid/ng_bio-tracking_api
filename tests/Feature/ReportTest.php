@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Member;
+use App\Models\MembershipPlan;
 use App\Models\Payment;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
@@ -81,4 +82,43 @@ test('engagement report lists active members who never logged in', function () {
     expect($names)->not->toContain('Beto Activo');
     expect($names)->not->toContain('Caro Pendiente');
     expect($response->json('data.never_logged_in.0.id'))->toBe($neverLoggedInMember->id);
+});
+
+test('unauthenticated user cannot view data quality report', function () {
+    $this->getJson('/api/reports/data-quality')->assertStatus(401);
+});
+
+test('member role cannot view data quality report', function () {
+    Sanctum::actingAs(User::factory()->member()->create());
+    $this->getJson('/api/reports/data-quality')->assertStatus(403);
+});
+
+test('data quality report flags members missing plan and/or email', function () {
+    Sanctum::actingAs(User::factory()->admin()->create());
+
+    $complete = Member::factory()->create(['name' => 'Completo', 'email' => 'completo@example.com']);
+    MembershipPlan::factory()->create(['member_id' => $complete->id]);
+
+    $noPlan = Member::factory()->create(['name' => 'Sin Plan', 'email' => 'sinplan@example.com']);
+
+    $noEmail = Member::factory()->create(['name' => 'Sin Email', 'email' => null]);
+    MembershipPlan::factory()->create(['member_id' => $noEmail->id]);
+
+    $noPlanNoEmail = Member::factory()->create(['name' => 'Sin Nada', 'email' => null]);
+
+    $response = $this->getJson('/api/reports/data-quality');
+
+    $response->assertStatus(200)->assertJsonPath('data.incomplete_count', 3);
+
+    $incomplete = collect($response->json('data.incomplete'))->keyBy('name');
+    expect($incomplete->has('Completo'))->toBeFalse();
+
+    expect($incomplete['Sin Plan']['missing_plan'])->toBeTrue();
+    expect($incomplete['Sin Plan']['missing_email'])->toBeFalse();
+
+    expect($incomplete['Sin Email']['missing_plan'])->toBeFalse();
+    expect($incomplete['Sin Email']['missing_email'])->toBeTrue();
+
+    expect($incomplete['Sin Nada']['missing_plan'])->toBeTrue();
+    expect($incomplete['Sin Nada']['missing_email'])->toBeTrue();
 });

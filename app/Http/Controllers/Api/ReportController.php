@@ -63,4 +63,32 @@ class ReportController extends Controller
             'never_logged_in' => $neverLoggedIn,
         ], 'Resumen de actividad.');
     }
+
+    /**
+     * Miembros con datos incompletos: sin plan de membresía configurado y/o sin email.
+     */
+    public function dataQuality(Request $request): JsonResponse
+    {
+        abort_unless($request->user()->canAccessAllMembers(), 403);
+
+        $incomplete = Member::query()
+            ->where(function ($q) {
+                $q->whereDoesntHave('membershipPlan')->orWhereNull('email');
+            })
+            ->with('membershipPlan')
+            ->orderBy('name')
+            ->get()
+            ->map(fn (Member $m) => [
+                'id' => $m->id,
+                'name' => $m->name,
+                'training_group' => $m->training_group,
+                'missing_plan' => $m->membershipPlan === null,
+                'missing_email' => $m->email === null,
+            ]);
+
+        return ApiResponse::success([
+            'incomplete_count' => $incomplete->count(),
+            'incomplete' => $incomplete,
+        ], 'Resumen de datos incompletos.');
+    }
 }

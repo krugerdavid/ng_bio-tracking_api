@@ -59,4 +59,5 @@ Route::middleware('auth:sanctum')->group(function () {
     // Reports (dashboard)
     Route::get('reports/revenue', [ReportController::class, 'revenue']);
     Route::get('reports/engagement', [ReportController::class, 'engagement']);
+    Route::get('reports/data-quality', [ReportController::class, 'dataQuality']);
 });
