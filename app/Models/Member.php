@@ -53,4 +53,9 @@ class Member extends Model implements AuditableContract
     {
         return $this->hasMany(Payment::class);
     }
+
+    public function invites(): HasMany
+    {
+        return $this->hasMany(MemberInvite::class);
+    }
 }

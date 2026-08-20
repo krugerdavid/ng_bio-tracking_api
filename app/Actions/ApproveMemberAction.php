@@ -3,7 +3,9 @@
 namespace App\Actions;
 
 use App\Enums\UserStatus;
+use App\Mail\RegistrationApprovedMail;
 use App\Models\Member;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
 
 class ApproveMemberAction implements Action
@@ -28,6 +30,12 @@ class ApproveMemberAction implements Action
 
         $user->update(['status' => UserStatus::Active->value]);
 
-        return $member->fresh(['user']);
+        $member = $member->fresh(['user']);
+        $email = $member->email ?: $user->email;
+        if ($email) {
+            Mail::to($email)->send(new RegistrationApprovedMail($member));
+        }
+
+        return $member;
     }
 }
