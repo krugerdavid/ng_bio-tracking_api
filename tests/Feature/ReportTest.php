@@ -122,3 +122,56 @@ test('data quality report flags members missing plan and/or email', function () 
     expect($incomplete['Sin Nada']['missing_plan'])->toBeTrue();
     expect($incomplete['Sin Nada']['missing_email'])->toBeTrue();
 });
+
+test('unauthenticated user cannot view member summaries report', function () {
+    $this->postJson('/api/reports/member-summaries')->assertStatus(401);
+});
+
+test('member role cannot view member summaries report', function () {
+    Sanctum::actingAs(User::factory()->member()->create());
+    $this->postJson('/api/reports/member-summaries')->assertStatus(403);
+});
+
+test('member summaries report returns plan and debt for each requested member in one call', function () {
+    Sanctum::actingAs(User::factory()->admin()->create());
+
+    $withPlan = Member::factory()->create(['name' => 'Con Plan', 'credit_balance' => 0]);
+    $plan = MembershipPlan::factory()->create([
+        'member_id' => $withPlan->id,
+        'weekly_frequency' => 3,
+        'is_active' => true,
+        'start_date' => now()->subMonths(2)->startOfMonth(),
+    ]);
+
+    $withoutPlan = Member::factory()->create(['name' => 'Sin Plan']);
+
+    // Not requested: should not appear even though it exists.
+    Member::factory()->create(['name' => 'No Pedido']);
+
+    $response = $this->postJson('/api/reports/member-summaries', [
+        'member_ids' => [$withPlan->id, $withoutPlan->id],
+    ]);
+
+    $response->assertStatus(200);
+
+    $items = collect($response->json('data'))->keyBy('member_id');
+    expect($items)->toHaveCount(2);
+
+    expect($items[$withPlan->id]['plan']['id'])->toBe($plan->id);
+    expect($items[$withPlan->id]['plan']['weekly_frequency'])->toBe(3);
+    expect($items[$withPlan->id]['debt'])->toHaveKey('total_debt_after_credit');
+
+    expect($items[$withoutPlan->id]['plan'])->toBeNull();
+    expect((float) $items[$withoutPlan->id]['debt']['total_debt_after_credit'])->toBe(0.0);
+});
+
+test('member summaries report returns all members when no ids are given', function () {
+    Sanctum::actingAs(User::factory()->admin()->create());
+
+    Member::factory()->count(3)->create();
+
+    $response = $this->postJson('/api/reports/member-summaries');
+
+    $response->assertStatus(200);
+    expect($response->json('data'))->toHaveCount(3);
+});

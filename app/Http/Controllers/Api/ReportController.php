@@ -6,11 +6,16 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\ApiResponse;
 use App\Models\Member;
 use App\Models\Payment;
+use App\Services\MemberDebtService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ReportController extends Controller
 {
+    public function __construct(
+        private MemberDebtService $debtService
+    ) {}
+
     /**
      * Ingresos mensuales (últimos 12 meses, solo pagos "paid") + saldo a favor total.
      */
@@ -90,5 +95,45 @@ class ReportController extends Controller
             'incomplete_count' => $incomplete->count(),
             'incomplete' => $incomplete,
         ], 'Resumen de datos incompletos.');
+    }
+
+    /**
+     * Plan y resumen de deuda de un conjunto de miembros en una sola consulta.
+     *
+     * Reemplaza el patrón N+1 del frontend (una llamada a GET /members/{id}/plan
+     * y otra a GET /members/{id}/debt por cada miembro listado en /members o en
+     * el dashboard) por una sola request con los planes y pagos precargados.
+     */
+    public function memberSummaries(Request $request): JsonResponse
+    {
+        abort_unless($request->user()->canAccessAllMembers(), 403);
+
+        $ids = array_values(array_filter((array) $request->input('member_ids', [])));
+
+        $members = Member::query()
+            ->when(count($ids) > 0, fn ($q) => $q->whereIn('id', $ids))
+            ->with(['membershipPlan', 'payments'])
+            ->get();
+
+        $items = $members->map(function (Member $member) {
+            $plan = $member->membershipPlan;
+
+            return [
+                'member_id' => $member->id,
+                'plan' => $plan ? [
+                    'id' => $plan->id,
+                    'member_id' => $plan->member_id,
+                    'monthly_fee' => $plan->monthly_fee,
+                    'weekly_frequency' => $plan->weekly_frequency,
+                    'start_date' => $plan->start_date?->format('Y-m-d'),
+                    'is_active' => $plan->is_active,
+                    'created_at' => $plan->created_at,
+                    'updated_at' => $plan->updated_at,
+                ] : null,
+                'debt' => $this->debtService->getDebtSummary($member),
+            ];
+        });
+
+        return ApiResponse::success($items, 'Resumen de planes y deuda por miembro.');
     }
 }
